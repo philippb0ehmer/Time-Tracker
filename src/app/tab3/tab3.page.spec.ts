@@ -27,6 +27,7 @@ describe('Tab3Page', () => {
   let projects$: BehaviorSubject<Project[]>;
   let timeEntryRepo: jasmine.SpyObj<any>;
   let projectRepo: jasmine.SpyObj<any>;
+  let alertController: jasmine.SpyObj<any>;
   let component: Tab3Page;
 
   beforeEach(() => {
@@ -37,11 +38,12 @@ describe('Tab3Page', () => {
 
     timeEntryRepo = jasmine.createSpyObj('TimeEntryRepository', ['findByDateRange$']);
     projectRepo = jasmine.createSpyObj('ProjectRepository', ['findActive$']);
+    alertController = jasmine.createSpyObj('AlertController', ['create']);
 
     timeEntryRepo.findByDateRange$.and.returnValue(entries$.asObservable());
     projectRepo.findActive$.and.returnValue(projects$.asObservable());
 
-    component = new Tab3Page(timeEntryRepo, projectRepo);
+    component = new Tab3Page(timeEntryRepo, projectRepo, alertController);
     component.ngOnInit();
   });
 

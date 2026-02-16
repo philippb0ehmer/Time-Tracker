@@ -155,3 +155,24 @@
   font-weight: 600;
   white-space: nowrap;
 }
+
+.entry-side {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.entry-actions {
+  align-items: center;
+  display: flex;
+  gap: 2px;
+}
+
+.entry-actions ion-button {
+  --padding-end: 4px;
+  --padding-start: 4px;
+  font-size: 0.72rem;
+  height: 24px;
+  min-height: 24px;
+}

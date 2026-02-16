@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AlertController } from '@ionic/angular';
 import { combineLatest, Subscription } from 'rxjs';
 import { Project } from '../shared/models/project.model';
 import { TimeEntry } from '../shared/models/time-entry.model';
@@ -36,7 +37,8 @@ export class Tab3Page implements OnInit, OnDestroy {
 
   constructor(
     private timeEntryRepo: TimeEntryRepository,
-    private projectRepo: ProjectRepository
+    private projectRepo: ProjectRepository,
+    private alertController: AlertController
   ) {}
 
   ngOnInit(): void {
@@ -137,6 +139,72 @@ export class Tab3Page implements OnInit, OnDestroy {
 
   entryDuration(entry: TimeEntry): string {
     return this.formatDuration(this.resolveDurationSeconds(entry));
+  }
+
+  async editEntry(entry: TimeEntry): Promise<void> {
+    const currentDurationMinutes = Math.max(1, Math.round(this.resolveDurationSeconds(entry) / 60));
+    const alert = await this.alertController.create({
+      header: 'Edit Time Entry',
+      subHeader: 'Update description and tracked minutes',
+      inputs: [
+        {
+          name: 'description',
+          type: 'text',
+          value: entry.description || '',
+          placeholder: 'Description'
+        },
+        {
+          name: 'durationMinutes',
+          type: 'number',
+          value: String(currentDurationMinutes),
+          min: 1,
+          placeholder: 'Duration in minutes'
+        }
+      ],
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Save',
+          handler: async (data) => {
+            const durationMinutes = Number(data.durationMinutes);
+            if (!Number.isFinite(durationMinutes) || durationMinutes <= 0) {
+              return false;
+            }
+
+            const durationSeconds = Math.round(durationMinutes * 60);
+            const endTime = entry.startTime + (durationSeconds * 1000);
+            await this.timeEntryRepo.update(entry.id, {
+              description: (data.description || '').trim(),
+              duration: durationSeconds,
+              endTime
+            } as Partial<TimeEntry>);
+
+            return true;
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async deleteEntry(entry: TimeEntry): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Delete Entry',
+      message: 'Delete this time entry? This cannot be undone.',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Delete',
+          role: 'destructive',
+          handler: async () => {
+            await this.timeEntryRepo.delete(entry.id);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   private loadProjectGoals(): Record<string, number> {

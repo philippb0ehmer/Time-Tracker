@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { Subject, takeUntil } from 'rxjs';
 import { ProjectRepository } from '../shared/repositories/project.repository';
+import { TimeEntryRepository } from '../shared/repositories/time-entry.repository';
 import { Project } from '../shared/models/project.model';
 
 @Component({
@@ -32,6 +33,7 @@ export class Tab2Page implements OnInit, OnDestroy {
 
   constructor(
     private projectRepo: ProjectRepository,
+    private timeEntryRepo: TimeEntryRepository,
     private alertController: AlertController
   ) {}
 
@@ -166,7 +168,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   async deleteProject(project: Project) {
     const alert = await this.alertController.create({
       header: 'Delete Project',
-      message: `Are you sure you want to permanently delete "${project.name}"? This cannot be undone.`,
+      message: `Delete "${project.name}" and all of its time entries? This cannot be undone.`,
       buttons: [
         {
           text: 'Cancel',
@@ -176,6 +178,7 @@ export class Tab2Page implements OnInit, OnDestroy {
           text: 'Delete',
           role: 'destructive',
           handler: async () => {
+            await this.timeEntryRepo.deleteByProject(project.id, this.userId);
             await this.projectRepo.delete(project.id);
           }
         }

@@ -145,4 +145,31 @@ export class TimeEntryRepository extends BaseRepository<TimeEntry> {
       });
     }
   }
+
+  /**
+   * Soft-delete all entries for a project (used when deleting a project)
+   */
+  async deleteByProject(projectId: string, userId: string): Promise<number> {
+    const collection = await this.ensureCollection();
+    const docs = await collection.find({
+      selector: {
+        projectId: projectId,
+        userId: userId,
+        _deleted: { $ne: true }
+      } as any
+    }).exec();
+
+    let deletedCount = 0;
+    for (const doc of docs) {
+      await doc.update({
+        $set: {
+          _deleted: true,
+          updatedAt: Date.now()
+        }
+      });
+      deletedCount += 1;
+    }
+
+    return deletedCount;
+  }
 }
