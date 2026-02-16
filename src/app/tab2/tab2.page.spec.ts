@@ -27,6 +27,7 @@ describe('Tab2Page', () => {
     alertController = jasmine.createSpyObj('AlertController', ['create']);
 
     component = new Tab2Page(projectRepo, timeEntryRepo, alertController);
+    spyOn<any>(component, 'pickHexColor').and.resolveTo('#3880ff');
   });
 
   it('should create', () => {

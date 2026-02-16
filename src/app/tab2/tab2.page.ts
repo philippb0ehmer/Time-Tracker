@@ -31,6 +31,36 @@ export class Tab2Page implements OnInit, OnDestroy {
     { name: 'Indigo', value: '#4361ee' }
   ];
 
+  private normalizeHexColor(value: string | undefined, fallback: string): string {
+    if (!value) return fallback;
+    const trimmed = value.trim();
+    return /^#[0-9A-Fa-f]{6}$/.test(trimmed) ? trimmed : fallback;
+  }
+
+  private pickHexColor(initial: string): Promise<string> {
+    return new Promise((resolve) => {
+      const input = document.createElement('input');
+      input.type = 'color';
+      input.value = this.normalizeHexColor(initial, '#3880ff');
+      input.style.position = 'fixed';
+      input.style.left = '-9999px';
+      document.body.appendChild(input);
+
+      let finished = false;
+      const complete = (value: string) => {
+        if (finished) return;
+        finished = true;
+        resolve(this.normalizeHexColor(value, initial));
+        input.remove();
+      };
+
+      input.addEventListener('input', () => complete(input.value), { once: true });
+      input.addEventListener('change', () => complete(input.value), { once: true });
+      input.addEventListener('blur', () => complete(initial), { once: true });
+      input.click();
+    });
+  }
+
   constructor(
     private projectRepo: ProjectRepository,
     private timeEntryRepo: TimeEntryRepository,
@@ -63,8 +93,10 @@ export class Tab2Page implements OnInit, OnDestroy {
   }
 
   async createProject() {
+    const pickedColor = await this.pickHexColor(this.colors[0].value);
     const alert = await this.alertController.create({
       header: 'New Project',
+      message: 'Color picked. You can adjust the hex code below.',
       inputs: [
         {
           name: 'name',
@@ -72,10 +104,10 @@ export class Tab2Page implements OnInit, OnDestroy {
           placeholder: 'Project name'
         },
         {
-          name: 'color',
+          name: 'colorHex',
           type: 'text',
-          value: this.colors[0].value,
-          placeholder: 'Color (hex)'
+          value: pickedColor,
+          placeholder: '#3880ff'
         }
       ],
       buttons: [
@@ -90,7 +122,7 @@ export class Tab2Page implements OnInit, OnDestroy {
               await this.projectRepo.createProject(
                 data.name.trim(),
                 this.userId,
-                data.color || this.colors[0].value
+                this.normalizeHexColor(data.colorHex, pickedColor)
               );
             }
           }
@@ -102,8 +134,10 @@ export class Tab2Page implements OnInit, OnDestroy {
   }
 
   async editProject(project: Project) {
+    const pickedColor = await this.pickHexColor(project.color);
     const alert = await this.alertController.create({
       header: 'Edit Project',
+      message: 'Color picked. You can adjust the hex code below.',
       inputs: [
         {
           name: 'name',
@@ -112,10 +146,10 @@ export class Tab2Page implements OnInit, OnDestroy {
           placeholder: 'Project name'
         },
         {
-          name: 'color',
+          name: 'colorHex',
           type: 'text',
-          value: project.color,
-          placeholder: 'Color (hex)'
+          value: pickedColor,
+          placeholder: '#3880ff'
         }
       ],
       buttons: [
@@ -129,7 +163,7 @@ export class Tab2Page implements OnInit, OnDestroy {
             if (data.name && data.name.trim()) {
               await this.projectRepo.update(project.id, {
                 name: data.name.trim(),
-                color: data.color || project.color
+                color: this.normalizeHexColor(data.colorHex, pickedColor)
               } as Partial<Project>);
             }
           }
