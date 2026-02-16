@@ -55,7 +55,7 @@ export class DatabaseService {
       name: dbName,
       storage: storage,
       multiInstance: false,
-      ignoreDuplicate: true
+      ignoreDuplicate: !environment.production
     });
 
     // Create collections
