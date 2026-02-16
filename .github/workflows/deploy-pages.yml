@@ -39,6 +39,14 @@ jobs:
         run: |
           REPO_NAME="${GITHUB_REPOSITORY#*/}"
           npm run build -- --configuration production --base-href "/${REPO_NAME}/"
+          cat > www/assets/version.json <<EOF
+          {
+            "version": "${GITHUB_SHA}-${GITHUB_RUN_NUMBER}",
+            "sha": "${GITHUB_SHA}",
+            "runNumber": "${GITHUB_RUN_NUMBER}",
+            "builtAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
           cp www/index.html www/404.html
 
       - name: Setup Pages

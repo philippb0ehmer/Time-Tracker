@@ -28,7 +28,9 @@ export class Tab2Page implements OnInit, OnDestroy {
     { name: 'Purple', value: '#9d4edd' },
     { name: 'Pink', value: '#f72585' },
     { name: 'Teal', value: '#06d6a0' },
-    { name: 'Indigo', value: '#4361ee' }
+    { name: 'Indigo', value: '#4361ee' },
+    { name: 'Slate', value: '#64748b' },
+    { name: 'Amber', value: '#f59e0b' }
   ];
 
   private normalizeHexColor(value: string | undefined, fallback: string): string {
@@ -38,26 +40,37 @@ export class Tab2Page implements OnInit, OnDestroy {
   }
 
   private pickHexColor(initial: string): Promise<string> {
-    return new Promise((resolve) => {
-      const input = document.createElement('input');
-      input.type = 'color';
-      input.value = this.normalizeHexColor(initial, '#3880ff');
-      input.style.position = 'fixed';
-      input.style.left = '-9999px';
-      document.body.appendChild(input);
+    return new Promise(async (resolve) => {
+      const normalizedInitial = this.normalizeHexColor(initial, '#3880ff');
+      let selectedColor = normalizedInitial;
 
-      let finished = false;
-      const complete = (value: string) => {
-        if (finished) return;
-        finished = true;
-        resolve(this.normalizeHexColor(value, initial));
-        input.remove();
-      };
+      const alert = await this.alertController.create({
+        header: 'Choose Project Color',
+        message: 'Pick one of the preset colors.',
+        inputs: this.colors.map((color) => ({
+          type: 'radio',
+          name: color.name,
+          label: `${color.name} (${color.value})`,
+          value: color.value,
+          checked: color.value.toLowerCase() === normalizedInitial.toLowerCase()
+        })),
+        buttons: [
+          {
+            text: 'Cancel',
+            role: 'cancel',
+            handler: () => resolve(normalizedInitial)
+          },
+          {
+            text: 'Use Color',
+            handler: (value: string) => {
+              selectedColor = this.normalizeHexColor(value, normalizedInitial);
+              resolve(selectedColor);
+            }
+          }
+        ]
+      });
 
-      input.addEventListener('input', () => complete(input.value), { once: true });
-      input.addEventListener('change', () => complete(input.value), { once: true });
-      input.addEventListener('blur', () => complete(initial), { once: true });
-      input.click();
+      await alert.present();
     });
   }
 
@@ -96,7 +109,7 @@ export class Tab2Page implements OnInit, OnDestroy {
     const pickedColor = await this.pickHexColor(this.colors[0].value);
     const alert = await this.alertController.create({
       header: 'New Project',
-      message: 'Color picked. You can adjust the hex code below.',
+      message: 'Color selected from palette. You can still adjust the hex code below.',
       inputs: [
         {
           name: 'name',
@@ -137,7 +150,7 @@ export class Tab2Page implements OnInit, OnDestroy {
     const pickedColor = await this.pickHexColor(project.color);
     const alert = await this.alertController.create({
       header: 'Edit Project',
-      message: 'Color picked. You can adjust the hex code below.',
+      message: 'Color selected from palette. You can still adjust the hex code below.',
       inputs: [
         {
           name: 'name',
