@@ -28,6 +28,91 @@ Built with Ionic + Angular + RxDB (offline-first local database).
   - Edit/delete entries directly from Reports
 - Local-first data with RxDB + IndexedDB (Dexie storage).
 
+## User Guide (All Features + How To Access)
+
+### Navigation
+
+- Bottom tab bar:
+  - `Timer` -> `Tab1`
+  - `Projects` -> `Tab2`
+  - `Reports` -> `Tab3`
+
+### Timer (`Tab1`)
+
+- Start tracking time:
+  1. Select a project from the project dropdown.
+  2. (Optional) Enter a description.
+  3. Tap **Start Timer**.
+- Stop tracking time:
+  - Tap **Stop Timer**.
+- Active timer behavior:
+  - App stores active timer state locally and restores it when reopened.
+
+### Projects (`Tab2`)
+
+- Create a project:
+  1. Tap `+` in the top bar or floating `+` button.
+  2. Native color picker opens first.
+  3. In the dialog, enter project name and (optionally) adjust hex color.
+  4. Tap **Create**.
+
+- Edit a project:
+  1. On a project row, **swipe left** to reveal actions.
+  2. Tap the **pencil/edit** icon.
+  3. Update name/color, then tap **Save**.
+
+- Archive a project:
+  1. **Swipe left** on project row.
+  2. Tap the **archive** icon.
+  3. Confirm in popup.
+
+- Delete an active project:
+  1. **Swipe left** on project row.
+  2. Tap the **trash** icon.
+  3. Confirm in popup.
+  4. This also deletes all entries for that project (cascade delete).
+
+- Unarchive a project:
+  1. Expand the **Archived Projects** section.
+  2. **Swipe left** on archived row.
+  3. Tap the **undo** icon.
+
+- Delete an archived project:
+  1. Expand **Archived Projects**.
+  2. **Swipe left** on archived row.
+  3. Tap **trash**.
+  4. Confirm in popup.
+
+- Gesture note:
+  - Mobile: swipe row left.
+  - Desktop/web: click-drag row left with mouse/trackpad to reveal action buttons.
+
+### Reports (`Tab3`)
+
+- Change week:
+  - Tap **Previous** / **Next** in the week header.
+
+- Set weekly goal per project:
+  - In each project row, edit the **Goal (h)** input.
+
+- View project entry details:
+  - Tap a project row to expand/collapse entries for that week.
+
+- Edit a time entry retroactively:
+  1. Expand a project in Reports.
+  2. Tap **Edit** on an entry.
+  3. Update description and duration (minutes).
+  4. Tap **Save**.
+
+- Delete a time entry:
+  1. Expand a project in Reports.
+  2. Tap **Delete** on an entry.
+  3. Confirm in popup.
+
+- Progress indicators:
+  - Top card: overall weekly progress (sum tracked vs sum of project goals).
+  - Per project: progress bar and percent for that project only.
+
 ## Tech Stack
 
 - Ionic Angular (`@ionic/angular`)
