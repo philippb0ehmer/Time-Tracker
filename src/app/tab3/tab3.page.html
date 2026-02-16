@@ -48,7 +48,7 @@
       </ion-card-header>
       <ion-card-content *ngIf="hasProjects; else emptyState">
         <ion-list lines="none">
-          <ion-item *ngFor="let item of projectSummaries">
+          <ion-item *ngFor="let item of projectSummaries" button detail="false" (click)="toggleProjectDetails(item.projectId)">
             <div class="project-goal-row">
               <div class="project-main grow">
                 <span class="dot" [style.background]="item.projectColor"></span>
@@ -65,6 +65,8 @@
                   min="0"
                   step="0.5"
                   [ngModel]="projectGoalHours(item.projectId)"
+                  (click)="$event.stopPropagation()"
+                  (ionFocus)="$event.stopPropagation()"
                   (ngModelChange)="onProjectGoalChange(item.projectId, $event)"
                 ></ion-input>
               </div>
@@ -75,6 +77,21 @@
               <div class="project-time">{{ projectGoalPercent(item) | number:'1.0-0' }}%</div>
             </div>
             <ion-progress-bar [value]="projectGoalPercent(item) / 100" [color]="'medium'"></ion-progress-bar>
+
+            <div class="entry-list" *ngIf="expandedProjectId === item.projectId">
+              <div class="entry-list-title">Time Entries This Week</div>
+              <div *ngIf="getProjectEntries(item.projectId).length === 0" class="entry-empty">
+                No entries yet.
+              </div>
+              <div class="entry-row" *ngFor="let entry of getProjectEntries(item.projectId)">
+                <div class="entry-main">
+                  <div class="entry-date">{{ entry.startTime | date:'EEE, MMM d' }}</div>
+                  <div class="entry-desc">{{ entry.description || 'No description' }}</div>
+                  <div class="entry-range">{{ formatEntryTimeRange(entry) }}</div>
+                </div>
+                <div class="entry-duration">{{ entryDuration(entry) }}</div>
+              </div>
+            </div>
           </ion-item>
         </ion-list>
       </ion-card-content>

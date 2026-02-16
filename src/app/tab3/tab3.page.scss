@@ -99,3 +99,59 @@
   padding: 8px 0 4px;
   text-align: center;
 }
+
+.entry-list {
+  border-top: 1px solid var(--ion-color-step-150, #e5e5e5);
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+.entry-list-title {
+  color: var(--ion-color-medium);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.entry-empty {
+  color: var(--ion-color-medium);
+  font-size: 0.85rem;
+}
+
+.entry-row {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.entry-main {
+  min-width: 0;
+}
+
+.entry-date {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.entry-desc {
+  color: var(--ion-color-step-700, #444);
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entry-range {
+  color: var(--ion-color-medium);
+  font-size: 0.78rem;
+}
+
+.entry-duration {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}

@@ -31,6 +31,8 @@ export class Tab3Page implements OnInit, OnDestroy {
   totalWeekSeconds = 0;
   totalGoalSeconds = 0;
   projectSummaries: WeeklyProjectSummary[] = [];
+  expandedProjectId: string | null = null;
+  private entriesByProject = new Map<string, TimeEntry[]>();
 
   constructor(
     private timeEntryRepo: TimeEntryRepository,
@@ -110,6 +112,33 @@ export class Tab3Page implements OnInit, OnDestroy {
     return `${this.formatDuration(item.totalSeconds)} / ${goalHours}h`;
   }
 
+  toggleProjectDetails(projectId: string): void {
+    this.expandedProjectId = this.expandedProjectId === projectId ? null : projectId;
+  }
+
+  getProjectEntries(projectId: string): TimeEntry[] {
+    return this.entriesByProject.get(projectId) || [];
+  }
+
+  formatEntryTimeRange(entry: TimeEntry): string {
+    const start = new Date(entry.startTime);
+    const end = entry.endTime ? new Date(entry.endTime) : null;
+    const timeFormatter = new Intl.DateTimeFormat('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+
+    if (!end) {
+      return `${timeFormatter.format(start)} - Running`;
+    }
+
+    return `${timeFormatter.format(start)} - ${timeFormatter.format(end)}`;
+  }
+
+  entryDuration(entry: TimeEntry): string {
+    return this.formatDuration(this.resolveDurationSeconds(entry));
+  }
+
   private loadProjectGoals(): Record<string, number> {
     const raw = localStorage.getItem(this.projectGoalStorageKey);
     if (!raw) return {};
@@ -148,6 +177,7 @@ export class Tab3Page implements OnInit, OnDestroy {
   private buildSummary(entries: TimeEntry[], projects: Project[]): void {
     const projectMap = new Map(projects.map((p) => [p.id, p] as const));
     const summaryMap = new Map<string, WeeklyProjectSummary>();
+    this.entriesByProject = new Map();
     this.totalWeekSeconds = 0;
 
     for (const project of projects) {
@@ -180,7 +210,16 @@ export class Tab3Page implements OnInit, OnDestroy {
         });
       }
 
+      const projectEntries = this.entriesByProject.get(entry.projectId) || [];
+      projectEntries.push(entry);
+      this.entriesByProject.set(entry.projectId, projectEntries);
+
       this.totalWeekSeconds += duration;
+    }
+
+    for (const [projectId, projectEntries] of this.entriesByProject.entries()) {
+      projectEntries.sort((a, b) => b.startTime - a.startTime);
+      this.entriesByProject.set(projectId, projectEntries);
     }
 
     this.projectSummaries = Array.from(summaryMap.values()).sort(
