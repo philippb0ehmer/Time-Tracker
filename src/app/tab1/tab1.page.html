@@ -1,0 +1,95 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Timer
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Timer</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="timer-container">
+    <!-- Timer Display -->
+    <div class="timer-display">
+      <h1 class="timer-text">{{ formattedTime }}</h1>
+      <p class="timer-status" *ngIf="activeTimer">Running...</p>
+      <p class="timer-status" *ngIf="!activeTimer">Ready to start</p>
+    </div>
+
+    <!-- Timer Controls -->
+    <div class="timer-controls">
+      <!-- Project Selector -->
+      <ion-item *ngIf="!timerService.isRunning">
+        <ion-label position="stacked">Project</ion-label>
+        <ion-select
+          [(ngModel)]="selectedProjectId"
+          placeholder="Select a project"
+          interface="popover">
+          <ion-select-option
+            *ngFor="let project of projects"
+            [value]="project.id">
+            <ion-icon [style.color]="project.color" name="ellipse"></ion-icon>
+            {{ project.name }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <!-- Description Input -->
+      <ion-item *ngIf="!timerService.isRunning">
+        <ion-label position="stacked">Description (optional)</ion-label>
+        <ion-input
+          [(ngModel)]="description"
+          placeholder="What are you working on?"
+          type="text">
+        </ion-input>
+      </ion-item>
+
+      <!-- Active Timer Info -->
+      <div *ngIf="activeTimer" class="active-timer-info">
+        <ion-card>
+          <ion-card-content>
+            <h3>Current Task</h3>
+            <p *ngIf="activeTimer.description">{{ activeTimer.description }}</p>
+            <p *ngIf="!activeTimer.description"><em>No description</em></p>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- Start/Stop Buttons -->
+      <div class="button-container">
+        <ion-button
+          *ngIf="!timerService.isRunning"
+          expand="block"
+          size="large"
+          color="primary"
+          [disabled]="!canStart"
+          (click)="startTimer()">
+          <ion-icon slot="start" name="play"></ion-icon>
+          Start Timer
+        </ion-button>
+
+        <ion-button
+          *ngIf="timerService.isRunning"
+          expand="block"
+          size="large"
+          color="danger"
+          (click)="stopTimer()">
+          <ion-icon slot="start" name="stop"></ion-icon>
+          Stop Timer
+        </ion-button>
+      </div>
+
+      <!-- No Projects Message -->
+      <ion-card *ngIf="projects.length === 0" color="warning">
+        <ion-card-content>
+          <p>No projects found. Go to the Projects tab to create one!</p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</ion-content>

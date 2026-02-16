@@ -1,0 +1,89 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Weekly Report</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Weekly Report</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="report-page">
+    <ion-card>
+      <ion-card-content>
+        <div class="week-nav">
+          <ion-button fill="outline" size="small" (click)="previousWeek()">
+            Previous
+          </ion-button>
+          <div class="week-labels">
+            <div class="week-title">{{ weekLabel }}</div>
+            <div class="week-dates">{{ weekDateLabel }}</div>
+          </div>
+          <ion-button fill="outline" size="small" [disabled]="weekOffset === 0" (click)="nextWeek()">
+            Next
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Weekly Goal Progress</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="progress-row">
+          <span>{{ overallProgressLabel }}</span>
+          <span>{{ overallProgressPercent | number:'1.0-0' }}%</span>
+        </div>
+        <ion-progress-bar [value]="overallProgressPercent / 100"></ion-progress-bar>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>By Project</ion-card-title>
+      </ion-card-header>
+      <ion-card-content *ngIf="hasProjects; else emptyState">
+        <ion-list lines="none">
+          <ion-item *ngFor="let item of projectSummaries">
+            <div class="project-goal-row">
+              <div class="project-main grow">
+                <span class="dot" [style.background]="item.projectColor"></span>
+                <div>
+                  <div class="project-name">{{ item.projectName }}</div>
+                  <div class="project-meta">{{ item.entryCount }} entries</div>
+                </div>
+              </div>
+
+              <div class="goal-control">
+                <ion-label>Goal (h)</ion-label>
+                <ion-input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  [ngModel]="projectGoalHours(item.projectId)"
+                  (ngModelChange)="onProjectGoalChange(item.projectId, $event)"
+                ></ion-input>
+              </div>
+            </div>
+
+            <div class="project-row">
+              <div class="project-meta">{{ projectGoalLabel(item) }}</div>
+              <div class="project-time">{{ projectGoalPercent(item) | number:'1.0-0' }}%</div>
+            </div>
+            <ion-progress-bar [value]="projectGoalPercent(item) / 100" [color]="'medium'"></ion-progress-bar>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <ng-template #emptyState>
+      <div class="empty-state">
+        No active projects yet.
+      </div>
+    </ng-template>
+  </div>
+</ion-content>

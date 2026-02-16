@@ -1,0 +1,101 @@
+.report-page {
+  padding: 12px;
+}
+
+.week-nav {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.week-labels {
+  text-align: center;
+}
+
+.week-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.week-dates {
+  color: var(--ion-color-medium);
+  font-size: 0.85rem;
+}
+
+.progress-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+.project-row {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.project-main {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.project-goal-row {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.grow {
+  flex: 1;
+}
+
+.goal-control {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.goal-control ion-label {
+  color: var(--ion-color-medium);
+  font-size: 0.8rem;
+}
+
+.goal-control ion-input {
+  max-width: 80px;
+}
+
+.dot {
+  border-radius: 50%;
+  display: inline-block;
+  height: 10px;
+  width: 10px;
+}
+
+.project-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.project-meta {
+  color: var(--ion-color-medium);
+  font-size: 0.8rem;
+}
+
+.project-time {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.empty-state {
+  color: var(--ion-color-medium);
+  padding: 8px 0 4px;
+  text-align: center;
+}
