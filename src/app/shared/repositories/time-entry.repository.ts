@@ -127,14 +127,14 @@ export class TimeEntryRepository extends BaseRepository<TimeEntry> {
   /**
    * Stop a running timer (set endTime and calculate duration)
    */
-  async stopTimer(id: string): Promise<void> {
+  async stopTimer(id: string, durationSeconds?: number): Promise<void> {
     const collection = await this.ensureCollection();
 
     const doc = await collection.findOne(id).exec();
     if (doc) {
       const entry = doc.toJSON() as TimeEntry;
       const now = Date.now();
-      const duration = Math.floor((now - entry.startTime) / 1000); // duration in seconds
+      const duration = durationSeconds ?? Math.floor((now - entry.startTime) / 1000); // duration in seconds
 
       await doc.update({
         $set: {

@@ -71,16 +71,37 @@ export class Tab1Page implements OnInit, OnDestroy {
     await this.timerService.stopTimer(this.userId);
   }
 
+  pauseTimer() {
+    this.timerService.pauseTimer();
+  }
+
+  resumeTimer() {
+    this.timerService.resumeTimer();
+  }
+
+  get statusText(): string {
+    if (!this.activeTimer) return 'Ready to start';
+    return this.activeTimer.isPaused ? 'Paused' : 'Running...';
+  }
+
   get formattedTime(): string {
     if (!this.activeTimer) return '00:00:00';
     return this.timerService.formatElapsedTime(this.activeTimer.elapsedSeconds);
   }
 
   get canStart(): boolean {
-    return !this.timerService.isRunning && this.selectedProjectId !== '';
+    return !this.timerService.hasActiveTimer && this.selectedProjectId !== '';
+  }
+
+  get canPause(): boolean {
+    return this.timerService.isRunning;
+  }
+
+  get canResume(): boolean {
+    return this.timerService.isPaused;
   }
 
   get canStop(): boolean {
-    return this.timerService.isRunning;
+    return this.timerService.hasActiveTimer;
   }
 }

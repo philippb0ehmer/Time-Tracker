@@ -17,14 +17,13 @@
     <!-- Timer Display -->
     <div class="timer-display">
       <h1 class="timer-text">{{ formattedTime }}</h1>
-      <p class="timer-status" *ngIf="activeTimer">Running...</p>
-      <p class="timer-status" *ngIf="!activeTimer">Ready to start</p>
+      <p class="timer-status">{{ statusText }}</p>
     </div>
 
     <!-- Timer Controls -->
     <div class="timer-controls">
       <!-- Project Selector -->
-      <ion-item *ngIf="!timerService.isRunning">
+      <ion-item *ngIf="!timerService.hasActiveTimer">
         <ion-label position="stacked">Project</ion-label>
         <ion-select
           [(ngModel)]="selectedProjectId"
@@ -40,7 +39,7 @@
       </ion-item>
 
       <!-- Description Input -->
-      <ion-item *ngIf="!timerService.isRunning">
+      <ion-item *ngIf="!timerService.hasActiveTimer">
         <ion-label position="stacked">Description (optional)</ion-label>
         <ion-input
           [(ngModel)]="description"
@@ -63,7 +62,7 @@
       <!-- Start/Stop Buttons -->
       <div class="button-container">
         <ion-button
-          *ngIf="!timerService.isRunning"
+          *ngIf="!timerService.hasActiveTimer"
           expand="block"
           size="large"
           color="primary"
@@ -77,7 +76,30 @@
           *ngIf="timerService.isRunning"
           expand="block"
           size="large"
+          color="medium"
+          [disabled]="!canPause"
+          (click)="pauseTimer()">
+          <ion-icon slot="start" name="pause"></ion-icon>
+          Pause Timer
+        </ion-button>
+
+        <ion-button
+          *ngIf="timerService.isPaused"
+          expand="block"
+          size="large"
+          color="success"
+          [disabled]="!canResume"
+          (click)="resumeTimer()">
+          <ion-icon slot="start" name="play"></ion-icon>
+          Resume Timer
+        </ion-button>
+
+        <ion-button
+          *ngIf="timerService.hasActiveTimer"
+          expand="block"
+          size="large"
           color="danger"
+          [disabled]="!canStop"
           (click)="stopTimer()">
           <ion-icon slot="start" name="stop"></ion-icon>
           Stop Timer

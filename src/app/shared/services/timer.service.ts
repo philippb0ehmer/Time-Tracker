@@ -1,14 +1,17 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, interval } from 'rxjs';
 import { TimeEntryRepository } from '../repositories/time-entry.repository';
-import { TimeEntry } from '../models/time-entry.model';
 
 export interface ActiveTimer {
   entryId: string;
   projectId: string;
   startTime: number;
+  lastResumedAt: number;
   description: string;
+  accumulatedSeconds: number;
   elapsedSeconds: number;
+  isPaused: boolean;
+  pausedAt?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -34,10 +37,26 @@ export class TimerService {
   }
 
   /**
-   * Check if timer is running
+   * Check if any timer exists (running or paused)
+   */
+  get hasActiveTimer(): boolean {
+    return this.activeTimerSubject.value !== null;
+  }
+
+  /**
+   * Check if timer is actively running
    */
   get isRunning(): boolean {
-    return this.activeTimerSubject.value !== null;
+    const timer = this.activeTimerSubject.value;
+    return timer !== null && !timer.isPaused;
+  }
+
+  /**
+   * Check if timer is paused
+   */
+  get isPaused(): boolean {
+    const timer = this.activeTimerSubject.value;
+    return timer !== null && timer.isPaused;
   }
 
   /**
@@ -66,8 +85,11 @@ export class TimerService {
       entryId: entry.id,
       projectId,
       startTime: now,
+      lastResumedAt: now,
       description,
-      elapsedSeconds: 0
+      accumulatedSeconds: 0,
+      elapsedSeconds: 0,
+      isPaused: false
     };
 
     this.activeTimerSubject.next(timer);
@@ -77,12 +99,18 @@ export class TimerService {
   /**
    * Stop the active timer
    */
-  async stopTimer(userId: string): Promise<void> {
+  async stopTimer(_userId: string): Promise<void> {
     const timer = this.activeTimerSubject.value;
     if (!timer) return;
 
+    const now = Date.now();
+    const elapsedWhileRunning = timer.isPaused
+      ? 0
+      : Math.floor((now - timer.lastResumedAt) / 1000);
+    const totalDuration = timer.accumulatedSeconds + elapsedWhileRunning;
+
     // Update the time entry with endTime and duration
-    await this.timeEntryRepo.stopTimer(timer.entryId);
+    await this.timeEntryRepo.stopTimer(timer.entryId, totalDuration);
 
     // Clear active timer
     this.activeTimerSubject.next(null);
@@ -90,13 +118,52 @@ export class TimerService {
   }
 
   /**
+   * Pause the active timer
+   */
+  pauseTimer(): void {
+    const timer = this.activeTimerSubject.value;
+    if (!timer || timer.isPaused) return;
+
+    const now = Date.now();
+    const elapsedWhileRunning = Math.floor((now - timer.lastResumedAt) / 1000);
+    const pausedTimer: ActiveTimer = {
+      ...timer,
+      accumulatedSeconds: timer.accumulatedSeconds + elapsedWhileRunning,
+      elapsedSeconds: timer.accumulatedSeconds + elapsedWhileRunning,
+      isPaused: true,
+      pausedAt: now
+    };
+
+    this.activeTimerSubject.next(pausedTimer);
+    this.saveActiveTimerToStorage(pausedTimer);
+  }
+
+  /**
+   * Resume a paused timer
+   */
+  resumeTimer(): void {
+    const timer = this.activeTimerSubject.value;
+    if (!timer || !timer.isPaused) return;
+
+    const resumedTimer: ActiveTimer = {
+      ...timer,
+      lastResumedAt: Date.now(),
+      isPaused: false,
+      pausedAt: undefined
+    };
+
+    this.activeTimerSubject.next(resumedTimer);
+    this.saveActiveTimerToStorage(resumedTimer);
+  }
+
+  /**
    * Update elapsed time for active timer
    */
   private updateElapsedTime(): void {
     const timer = this.activeTimerSubject.value;
-    if (timer) {
+    if (timer && !timer.isPaused) {
       const now = Date.now();
-      const elapsed = Math.floor((now - timer.startTime) / 1000);
+      const elapsed = timer.accumulatedSeconds + Math.floor((now - timer.lastResumedAt) / 1000);
       this.activeTimerSubject.next({ ...timer, elapsedSeconds: elapsed });
     }
   }
@@ -108,11 +175,25 @@ export class TimerService {
     try {
       const stored = localStorage.getItem('activeTimer');
       if (stored) {
-        const timer: ActiveTimer = JSON.parse(stored);
-        // Recalculate elapsed time
+        const parsed = JSON.parse(stored) as Partial<ActiveTimer>;
+
+        const timer: ActiveTimer = {
+          entryId: parsed.entryId || '',
+          projectId: parsed.projectId || '',
+          startTime: parsed.startTime || Date.now(),
+          lastResumedAt: parsed.lastResumedAt || parsed.startTime || Date.now(),
+          description: parsed.description || '',
+          accumulatedSeconds: parsed.accumulatedSeconds ?? (parsed.isPaused ? parsed.elapsedSeconds ?? 0 : 0),
+          elapsedSeconds: parsed.elapsedSeconds ?? 0,
+          isPaused: parsed.isPaused ?? false,
+          pausedAt: parsed.pausedAt
+        };
+
         const now = Date.now();
-        const elapsed = Math.floor((now - timer.startTime) / 1000);
-        timer.elapsedSeconds = elapsed;
+        timer.elapsedSeconds = timer.isPaused
+          ? timer.accumulatedSeconds
+          : timer.accumulatedSeconds + Math.floor((now - timer.lastResumedAt) / 1000);
+
         this.activeTimerSubject.next(timer);
       }
     } catch (error) {
