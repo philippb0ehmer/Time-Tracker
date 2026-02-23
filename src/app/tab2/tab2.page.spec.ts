@@ -43,6 +43,8 @@ describe('Tab2Page', () => {
       localUserId: 'demo-user-1',
       isConfigured: true,
       signInWithMagicLink: jasmine.createSpy('signInWithMagicLink').and.resolveTo(null),
+      signInWithPassword: jasmine.createSpy('signInWithPassword').and.resolveTo(null),
+      signUpWithPassword: jasmine.createSpy('signUpWithPassword').and.resolveTo(null),
       signOut: jasmine.createSpy('signOut').and.resolveTo(null)
     };
 

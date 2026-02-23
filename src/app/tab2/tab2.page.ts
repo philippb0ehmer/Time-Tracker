@@ -21,6 +21,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   archivedProjects: Project[] = [];
   showArchived = false;
   signInEmail = '';
+  signInPassword = '';
   cloudUserEmail: string | null = null;
   authMessage = '';
   syncState: CloudSyncState = {
@@ -305,6 +306,37 @@ export class Tab2Page implements OnInit, OnDestroy {
     this.authMessage = 'Magic link sent. Open your email and follow the login link.';
   }
 
+  async signInWithPassword(): Promise<void> {
+    this.authMessage = '';
+    const errorMessage = await this.supabaseService.signInWithPassword(
+      this.signInEmail,
+      this.signInPassword
+    );
+
+    if (errorMessage) {
+      this.authMessage = errorMessage;
+      return;
+    }
+
+    this.signInPassword = '';
+    this.authMessage = 'Signed in.';
+  }
+
+  async signUpWithPassword(): Promise<void> {
+    this.authMessage = '';
+    const errorMessage = await this.supabaseService.signUpWithPassword(
+      this.signInEmail,
+      this.signInPassword
+    );
+
+    if (errorMessage) {
+      this.authMessage = errorMessage;
+      return;
+    }
+
+    this.authMessage = 'Account created. You can now sign in.';
+  }
+
   async signOutCloud(): Promise<void> {
     const errorMessage = await this.supabaseService.signOut();
     this.authMessage = errorMessage || 'Signed out.';
@@ -312,5 +344,43 @@ export class Tab2Page implements OnInit, OnDestroy {
 
   async syncNow(): Promise<void> {
     await this.cloudSyncService.syncNow();
+  }
+
+  async syncUpOverwriteCloud(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Push Device -> Cloud',
+      message: 'This will overwrite cloud data with current device data. Continue?',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Overwrite Cloud',
+          role: 'destructive',
+          handler: async () => {
+            await this.cloudSyncService.syncUpOverwriteCloud();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async syncDownOverwriteDevice(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Pull Cloud -> Device',
+      message: 'This will overwrite local device data with cloud data. Continue?',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Overwrite Device',
+          role: 'destructive',
+          handler: async () => {
+            await this.cloudSyncService.syncDownOverwriteDevice();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 }

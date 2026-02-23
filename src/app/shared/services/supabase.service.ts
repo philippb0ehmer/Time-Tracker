@@ -88,6 +88,42 @@ export class SupabaseService {
     return error?.message || null;
   }
 
+  async signInWithPassword(email: string, password: string): Promise<string | null> {
+    if (!this.isConfigured) {
+      return 'Supabase is not configured. Add URL and anon key in environment files.';
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || !password) {
+      return 'Please enter email and password.';
+    }
+
+    const { error } = await this.supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password
+    });
+
+    return error?.message || null;
+  }
+
+  async signUpWithPassword(email: string, password: string): Promise<string | null> {
+    if (!this.isConfigured) {
+      return 'Supabase is not configured. Add URL and anon key in environment files.';
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || !password) {
+      return 'Please enter email and password.';
+    }
+
+    const { error } = await this.supabase.auth.signUp({
+      email: normalizedEmail,
+      password
+    });
+
+    return error?.message || null;
+  }
+
   async signOut(): Promise<string | null> {
     if (!this.client) return null;
     const { error } = await this.client.auth.signOut();

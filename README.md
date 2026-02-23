@@ -178,9 +178,14 @@ This app now includes optional cloud sync (magic-link sign-in + periodic sync).
    - `src/environments/environment.prod.ts`
 5. Run app and open `Projects` tab:
    - Enter email in `Cloud Sync`
-   - Tap `Send Magic Link`
-   - Open email link on the same device/browser
+   - Either:
+     - tap `Sign Up` once, then `Sign In` with email/password, or
+     - tap `Magic Link` and open the email link
    - Tap `Sync Now` (auto-sync runs periodically after sign-in)
+   - Optional manual direction controls:
+     - `Sync (Merge)` = bidirectional last-write-wins by `updatedAt`
+     - `Push Up` = overwrite cloud with this device
+     - `Pull Down` = overwrite this device with cloud
 
 Notes:
 - Direct Postgres connection string is not used by the frontend app.

@@ -40,6 +40,8 @@ export interface CloudSyncState {
   lastError: string | null;
 }
 
+type SyncMode = 'merge' | 'up' | 'down';
+
 @Injectable({ providedIn: 'root' })
 export class CloudSyncService {
   private readonly cloudUserStorageKey = 'tt_cloud_user_id';
@@ -88,6 +90,18 @@ export class CloudSyncService {
   }
 
   async syncNow(): Promise<void> {
+    await this.syncInternal('merge');
+  }
+
+  async syncUpOverwriteCloud(): Promise<void> {
+    await this.syncInternal('up');
+  }
+
+  async syncDownOverwriteDevice(): Promise<void> {
+    await this.syncInternal('down');
+  }
+
+  private async syncInternal(mode: SyncMode): Promise<void> {
     if (this.syncInProgress || !this.supabaseService.isConfigured) return;
     const remoteUser = this.supabaseService.currentUser;
     if (!remoteUser) return;
@@ -102,6 +116,61 @@ export class CloudSyncService {
     try {
       const localUserId = this.supabaseService.localUserId;
       this.ensureCloudUserBinding(remoteUser.id);
+
+      if (mode === 'up') {
+        const [localProjectsAll, localEntriesAll] = await Promise.all([
+          firstValueFrom(this.projectRepo.findAllIncludingDeleted$(localUserId)),
+          firstValueFrom(this.timeEntryRepo.findAllIncludingDeleted$(localUserId))
+        ]);
+
+        const localProjects = localProjectsAll.filter((item) => item._deleted !== true);
+        const localEntries = localEntriesAll.filter((item) => item._deleted !== true);
+
+        await this.clearRemoteData(remoteUser.id);
+
+        if (localProjects.length > 0) {
+          await this.pushProjects(localProjects, remoteUser.id);
+        }
+        if (localEntries.length > 0) {
+          await this.pushTimeEntries(localEntries, remoteUser.id);
+        }
+
+        this.stateSubject.next({
+          status: 'idle',
+          lastSyncedAt: Date.now(),
+          lastError: null
+        });
+        return;
+      }
+
+      if (mode === 'down') {
+        const [remoteProjectsAll, remoteEntriesAll] = await Promise.all([
+          this.fetchRemoteProjects(remoteUser.id),
+          this.fetchRemoteTimeEntries(remoteUser.id)
+        ]);
+
+        const remoteProjects = remoteProjectsAll.filter((item) => item._deleted !== true);
+        const remoteProjectIds = new Set(remoteProjects.map((item) => item.id));
+        const remoteEntries = remoteEntriesAll.filter(
+          (item) => item._deleted !== true && remoteProjectIds.has(item.projectId)
+        );
+
+        await this.clearLocalData(localUserId);
+
+        for (const project of remoteProjects) {
+          await this.projectRepo.upsertFromSync(project);
+        }
+        for (const entry of remoteEntries) {
+          await this.timeEntryRepo.upsertFromSync(entry);
+        }
+
+        this.stateSubject.next({
+          status: 'idle',
+          lastSyncedAt: Date.now(),
+          lastError: null
+        });
+        return;
+      }
 
       const [localProjects, localEntries, remoteProjects, remoteEntries] = await Promise.all([
         firstValueFrom(this.projectRepo.findAllIncludingDeleted$(localUserId)),
@@ -183,6 +252,39 @@ export class CloudSyncService {
         'This device already has synced data for a different cloud account. ' +
         'Use one account per device/profile or clear local data before switching.'
       );
+    }
+  }
+
+  private async clearLocalData(localUserId: string): Promise<void> {
+    const [localEntries, localProjects] = await Promise.all([
+      firstValueFrom(this.timeEntryRepo.findAllIncludingDeleted$(localUserId)),
+      firstValueFrom(this.projectRepo.findAllIncludingDeleted$(localUserId))
+    ]);
+
+    for (const entry of localEntries) {
+      await this.timeEntryRepo.hardDelete(entry.id);
+    }
+
+    for (const project of localProjects) {
+      await this.projectRepo.hardDelete(project.id);
+    }
+  }
+
+  private async clearRemoteData(remoteUserId: string): Promise<void> {
+    const deleteEntries = await this.supabaseService.supabase
+      .from('time_entries')
+      .delete()
+      .eq('user_id', remoteUserId);
+    if (deleteEntries.error) {
+      throw new Error(`Failed to clear remote entries: ${deleteEntries.error.message}`);
+    }
+
+    const deleteProjects = await this.supabaseService.supabase
+      .from('projects')
+      .delete()
+      .eq('user_id', remoteUserId);
+    if (deleteProjects.error) {
+      throw new Error(`Failed to clear remote projects: ${deleteProjects.error.message}`);
     }
   }
 

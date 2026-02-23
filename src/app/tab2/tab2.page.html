@@ -38,6 +38,15 @@
             placeholder="you@example.com">
           </ion-input>
         </ion-item>
+        <ion-item *ngIf="!isSignedIn">
+          <ion-label position="stacked">Password</ion-label>
+          <ion-input
+            type="password"
+            autocomplete="current-password"
+            [(ngModel)]="signInPassword"
+            placeholder="Your password">
+          </ion-input>
+        </ion-item>
 
         <div *ngIf="isSignedIn" class="sync-user">
           Signed in as <strong>{{ cloudUserEmail }}</strong>
@@ -48,15 +57,47 @@
           <ion-button
             *ngIf="!isSignedIn"
             size="small"
+            (click)="signInWithPassword()">
+            Sign In
+          </ion-button>
+          <ion-button
+            *ngIf="!isSignedIn"
+            size="small"
+            fill="outline"
+            (click)="signUpWithPassword()">
+            Sign Up
+          </ion-button>
+          <ion-button
+            *ngIf="!isSignedIn"
+            size="small"
+            fill="clear"
             (click)="sendMagicLink()">
-            Send Magic Link
+            Magic Link
           </ion-button>
           <ion-button
             *ngIf="isSignedIn"
             size="small"
             [disabled]="isSyncing"
             (click)="syncNow()">
-            Sync Now
+            Sync (Merge)
+          </ion-button>
+          <ion-button
+            *ngIf="isSignedIn"
+            size="small"
+            fill="outline"
+            color="warning"
+            [disabled]="isSyncing"
+            (click)="syncUpOverwriteCloud()">
+            Push Up
+          </ion-button>
+          <ion-button
+            *ngIf="isSignedIn"
+            size="small"
+            fill="outline"
+            color="warning"
+            [disabled]="isSyncing"
+            (click)="syncDownOverwriteDevice()">
+            Pull Down
           </ion-button>
           <ion-button
             *ngIf="isSignedIn"
