@@ -31,6 +31,7 @@
     "@capacitor/preferences": "^8.0.1",
     "@capacitor/status-bar": "8.0.1",
     "@ionic/angular": "^8.0.0",
+    "@supabase/supabase-js": "^2.97.0",
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
     "dexie": "^4.3.0",

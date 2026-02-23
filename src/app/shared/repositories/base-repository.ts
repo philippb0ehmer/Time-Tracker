@@ -36,6 +36,22 @@ export abstract class BaseRepository<T> {
   }
 
   /**
+   * Find all documents for a user including soft-deleted rows.
+   */
+  findAllIncludingDeleted$(userId: string): Observable<T[]> {
+    return from(this.ensureCollection()).pipe(
+      switchMap((collection) => collection
+        .find({
+          selector: {
+            userId: userId
+          } as any,
+          sort: [{ updatedAt: 'desc' }] as any
+        })
+        .$ as Observable<T[]>)
+    );
+  }
+
+  /**
    * Find a single document by ID (returns observable)
    */
   findById$(id: string): Observable<T | null> {
@@ -113,6 +129,24 @@ export abstract class BaseRepository<T> {
     if (doc) {
       await doc.remove();
     }
+  }
+
+  /**
+   * Upsert a document from cloud sync using source timestamps.
+   */
+  async upsertFromSync(data: T & { id: string }): Promise<void> {
+    const collection = await this.ensureCollection();
+    const doc = await collection.findOne(data.id).exec();
+
+    if (doc) {
+      const { id: _id, ...rest } = data as any;
+      await doc.update({
+        $set: rest
+      });
+      return;
+    }
+
+    await collection.insert(data as any);
   }
 
   /**

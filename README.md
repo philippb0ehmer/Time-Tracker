@@ -161,6 +161,32 @@ npm run start
 
 Open the local URL printed by Angular (commonly `http://localhost:4200`).
 
+## Supabase Sync Setup (Now Implemented)
+
+This app now includes optional cloud sync (magic-link sign-in + periodic sync).
+
+1. In Supabase dashboard, enable Email auth (magic link) in:
+   - `Authentication` -> `Providers` -> `Email`
+2. In Supabase dashboard, add redirect URLs in:
+   - `Authentication` -> `URL Configuration`
+   - Add local URL (for example `http://localhost:8100`)
+   - Add production URL if deployed
+3. Open Supabase SQL Editor and run:
+   - `supabase/schema.sql`
+4. Confirm environment values in:
+   - `src/environments/environment.ts`
+   - `src/environments/environment.prod.ts`
+5. Run app and open `Projects` tab:
+   - Enter email in `Cloud Sync`
+   - Tap `Send Magic Link`
+   - Open email link on the same device/browser
+   - Tap `Sync Now` (auto-sync runs periodically after sign-in)
+
+Notes:
+- Direct Postgres connection string is not used by the frontend app.
+- The frontend uses Supabase URL + publishable key + authenticated user session.
+- Local RxDB remains primary storage; cloud sync merges by `updatedAt` (last-write-wins).
+
 ### Build
 
 ```bash

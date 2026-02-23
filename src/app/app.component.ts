@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { CloudSyncService } from './shared/services/cloud-sync.service';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +11,8 @@ export class AppComponent {
   private readonly versionStorageKey = 'tt_deployed_version';
   buildLabel = 'Build dev-local';
 
-  constructor() {
+  constructor(private cloudSyncService: CloudSyncService) {
+    this.cloudSyncService.start();
     this.checkForNewDeployment();
   }
 

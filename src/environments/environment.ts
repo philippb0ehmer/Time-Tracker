@@ -4,6 +4,12 @@
 
 export const environment = {
   production: false,
+  supabase: {
+    url: 'https://dnxsbjjtbzhfvgisbidw.supabase.co',
+    anonKey: 'sb_publishable_7g1kup92z338yjAd6uznxg_5Fo7xhi6',
+    localUserId: 'demo-user-1',
+    syncIntervalMs: 30000
+  },
   firebaseConfig: {
     apiKey: 'YOUR_API_KEY',
     authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',

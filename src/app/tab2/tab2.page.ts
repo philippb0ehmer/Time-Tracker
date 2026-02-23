@@ -4,6 +4,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { ProjectRepository } from '../shared/repositories/project.repository';
 import { TimeEntryRepository } from '../shared/repositories/time-entry.repository';
 import { Project } from '../shared/models/project.model';
+import { CloudSyncService, CloudSyncState } from '../shared/services/cloud-sync.service';
+import { SupabaseService } from '../shared/services/supabase.service';
 
 @Component({
   selector: 'app-tab2',
@@ -13,11 +15,19 @@ import { Project } from '../shared/models/project.model';
 })
 export class Tab2Page implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  private userId = 'demo-user-1'; // Temporary
+  private userId = 'demo-user-1';
 
   projects: Project[] = [];
   archivedProjects: Project[] = [];
   showArchived = false;
+  signInEmail = '';
+  cloudUserEmail: string | null = null;
+  authMessage = '';
+  syncState: CloudSyncState = {
+    status: 'idle',
+    lastSyncedAt: null,
+    lastError: null
+  };
 
   // Predefined colors for projects
   colors = [
@@ -77,11 +87,28 @@ export class Tab2Page implements OnInit, OnDestroy {
   constructor(
     private projectRepo: ProjectRepository,
     private timeEntryRepo: TimeEntryRepository,
-    private alertController: AlertController
-  ) {}
+    private alertController: AlertController,
+    private cloudSyncService: CloudSyncService,
+    private supabaseService: SupabaseService
+  ) {
+    this.userId = this.supabaseService.localUserId;
+  }
 
   ngOnInit() {
+    this.cloudSyncService.start();
     this.loadProjects();
+
+    this.supabaseService.user$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((user) => {
+        this.cloudUserEmail = user?.email || null;
+      });
+
+    this.cloudSyncService.state$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((state) => {
+        this.syncState = state;
+      });
   }
 
   ngOnDestroy() {
@@ -237,5 +264,53 @@ export class Tab2Page implements OnInit, OnDestroy {
 
   toggleArchived() {
     this.showArchived = !this.showArchived;
+  }
+
+  get isCloudConfigured(): boolean {
+    return this.supabaseService.isConfigured;
+  }
+
+  get isSignedIn(): boolean {
+    return this.cloudUserEmail !== null;
+  }
+
+  get isSyncing(): boolean {
+    return this.syncState.status === 'syncing';
+  }
+
+  get syncStatusText(): string {
+    if (this.syncState.status === 'syncing') {
+      return 'Syncing...';
+    }
+
+    if (this.syncState.status === 'error' && this.syncState.lastError) {
+      return `Sync error: ${this.syncState.lastError}`;
+    }
+
+    if (this.syncState.lastSyncedAt) {
+      return `Last sync: ${new Date(this.syncState.lastSyncedAt).toLocaleString()}`;
+    }
+
+    return 'Not synced yet on this device.';
+  }
+
+  async sendMagicLink(): Promise<void> {
+    this.authMessage = '';
+    const errorMessage = await this.supabaseService.signInWithMagicLink(this.signInEmail);
+    if (errorMessage) {
+      this.authMessage = errorMessage;
+      return;
+    }
+
+    this.authMessage = 'Magic link sent. Open your email and follow the login link.';
+  }
+
+  async signOutCloud(): Promise<void> {
+    const errorMessage = await this.supabaseService.signOut();
+    this.authMessage = errorMessage || 'Signed out.';
+  }
+
+  async syncNow(): Promise<void> {
+    await this.cloudSyncService.syncNow();
   }
 }

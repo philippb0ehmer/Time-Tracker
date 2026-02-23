@@ -6,6 +6,8 @@ describe('Tab2Page', () => {
   let projectRepo: jasmine.SpyObj<any>;
   let timeEntryRepo: jasmine.SpyObj<any>;
   let alertController: jasmine.SpyObj<any>;
+  let cloudSyncService: any;
+  let supabaseService: any;
 
   beforeEach(() => {
     projectRepo = jasmine.createSpyObj('ProjectRepository', [
@@ -26,7 +28,31 @@ describe('Tab2Page', () => {
 
     alertController = jasmine.createSpyObj('AlertController', ['create']);
 
-    component = new Tab2Page(projectRepo, timeEntryRepo, alertController);
+    cloudSyncService = {
+      start: jasmine.createSpy('start'),
+      syncNow: jasmine.createSpy('syncNow').and.resolveTo(),
+      state$: of({
+        status: 'idle',
+        lastSyncedAt: null,
+        lastError: null
+      })
+    };
+
+    supabaseService = {
+      user$: of(null),
+      localUserId: 'demo-user-1',
+      isConfigured: true,
+      signInWithMagicLink: jasmine.createSpy('signInWithMagicLink').and.resolveTo(null),
+      signOut: jasmine.createSpy('signOut').and.resolveTo(null)
+    };
+
+    component = new Tab2Page(
+      projectRepo,
+      timeEntryRepo,
+      alertController,
+      cloudSyncService,
+      supabaseService
+    );
     spyOn<any>(component, 'pickHexColor').and.resolveTo('#3880ff');
   });
 

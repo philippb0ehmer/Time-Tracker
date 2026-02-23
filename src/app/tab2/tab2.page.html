@@ -20,6 +20,68 @@
 
   <!-- Active Projects -->
   <div class="projects-container">
+    <ion-card class="sync-card" *ngIf="isCloudConfigured; else cloudNotConfigured">
+      <ion-card-header>
+        <ion-card-title>Cloud Sync</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="sync-text" *ngIf="!isSignedIn">
+          Sign in once with your email to sync projects and entries across devices.
+        </p>
+
+        <ion-item *ngIf="!isSignedIn">
+          <ion-label position="stacked">Email</ion-label>
+          <ion-input
+            type="email"
+            autocomplete="email"
+            [(ngModel)]="signInEmail"
+            placeholder="you@example.com">
+          </ion-input>
+        </ion-item>
+
+        <div *ngIf="isSignedIn" class="sync-user">
+          Signed in as <strong>{{ cloudUserEmail }}</strong>
+        </div>
+        <div class="sync-status">{{ syncStatusText }}</div>
+
+        <div class="sync-actions">
+          <ion-button
+            *ngIf="!isSignedIn"
+            size="small"
+            (click)="sendMagicLink()">
+            Send Magic Link
+          </ion-button>
+          <ion-button
+            *ngIf="isSignedIn"
+            size="small"
+            [disabled]="isSyncing"
+            (click)="syncNow()">
+            Sync Now
+          </ion-button>
+          <ion-button
+            *ngIf="isSignedIn"
+            size="small"
+            fill="clear"
+            color="medium"
+            (click)="signOutCloud()">
+            Sign Out
+          </ion-button>
+        </div>
+
+        <div class="sync-message" *ngIf="authMessage">
+          {{ authMessage }}
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ng-template #cloudNotConfigured>
+      <ion-card class="sync-card">
+        <ion-card-content>
+          Cloud sync is disabled. Add Supabase URL and anon key in environment files.
+        </ion-card-content>
+      </ion-card>
+    </ng-template>
+
     <div *ngIf="projects.length === 0" class="empty-state">
       <ion-icon name="folder-open-outline" size="large"></ion-icon>
       <h2>No Projects Yet</h2>
