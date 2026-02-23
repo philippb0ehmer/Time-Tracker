@@ -47,36 +47,45 @@
         <ion-card-title>By Project</ion-card-title>
       </ion-card-header>
       <ion-card-content *ngIf="hasProjects; else emptyState">
-        <ion-list lines="none">
-          <ion-item *ngFor="let item of projectSummaries" button detail="false" (click)="toggleProjectDetails(item.projectId)">
-            <div class="project-goal-row">
-              <div class="project-main grow">
+        <ion-list lines="none" class="project-list">
+          <div class="project-card" *ngFor="let item of projectSummaries">
+            <button
+              type="button"
+              class="project-header"
+              (click)="toggleProjectDetails(item.projectId)"
+              [attr.aria-expanded]="expandedProjectId === item.projectId"
+            >
+              <div class="project-main">
                 <span class="dot" [style.background]="item.projectColor"></span>
-                <div>
+                <div class="project-heading-text">
                   <div class="project-name">{{ item.projectName }}</div>
                   <div class="project-meta">{{ item.entryCount }} entries</div>
                 </div>
               </div>
+              <ion-icon
+                class="project-chevron"
+                [name]="expandedProjectId === item.projectId ? 'chevron-up' : 'chevron-down'"
+              ></ion-icon>
+            </button>
 
-              <div class="goal-control">
-                <ion-label>Goal (h)</ion-label>
+            <div class="project-body">
+              <div class="project-row">
+                <div class="project-meta">{{ projectGoalLabel(item) }}</div>
+                <div class="project-time">{{ projectGoalPercent(item) | number:'1.0-0' }}%</div>
+              </div>
+              <ion-progress-bar [value]="projectGoalPercent(item) / 100" [color]="'medium'"></ion-progress-bar>
+
+              <div class="goal-control" *ngIf="expandedProjectId === item.projectId">
+                <ion-label>Goal (hours)</ion-label>
                 <ion-input
                   type="number"
                   min="0"
                   step="0.5"
                   [ngModel]="projectGoalHours(item.projectId)"
-                  (click)="$event.stopPropagation()"
-                  (ionFocus)="$event.stopPropagation()"
                   (ngModelChange)="onProjectGoalChange(item.projectId, $event)"
                 ></ion-input>
               </div>
             </div>
-
-            <div class="project-row">
-              <div class="project-meta">{{ projectGoalLabel(item) }}</div>
-              <div class="project-time">{{ projectGoalPercent(item) | number:'1.0-0' }}%</div>
-            </div>
-            <ion-progress-bar [value]="projectGoalPercent(item) / 100" [color]="'medium'"></ion-progress-bar>
 
             <div class="entry-list" *ngIf="expandedProjectId === item.projectId">
               <div class="entry-list-title">Time Entries This Week</div>
@@ -84,21 +93,19 @@
                 No entries yet.
               </div>
               <div class="entry-row" *ngFor="let entry of getProjectEntries(item.projectId)">
-                <div class="entry-main">
+                <div class="entry-top">
                   <div class="entry-date">{{ entry.startTime | date:'EEE, MMM d' }}</div>
-                  <div class="entry-desc">{{ entry.description || 'No description' }}</div>
-                  <div class="entry-range">{{ formatEntryTimeRange(entry) }}</div>
-                </div>
-                <div class="entry-side">
                   <div class="entry-duration">{{ entryDuration(entry) }}</div>
-                  <div class="entry-actions">
-                    <ion-button size="small" fill="clear" (click)="$event.stopPropagation(); editEntry(entry)">Edit</ion-button>
-                    <ion-button size="small" fill="clear" color="danger" (click)="$event.stopPropagation(); deleteEntry(entry)">Delete</ion-button>
-                  </div>
+                </div>
+                <div class="entry-desc">{{ entry.description || 'No description' }}</div>
+                <div class="entry-range">{{ formatEntryTimeRange(entry) }}</div>
+                <div class="entry-actions">
+                  <ion-button size="small" fill="clear" (click)="editEntry(entry)">Edit</ion-button>
+                  <ion-button size="small" fill="clear" color="danger" (click)="deleteEntry(entry)">Delete</ion-button>
                 </div>
               </div>
             </div>
-          </ion-item>
+          </div>
         </ion-list>
       </ion-card-content>
     </ion-card>

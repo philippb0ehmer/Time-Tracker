@@ -2,6 +2,41 @@
   padding: 12px;
 }
 
+.project-list {
+  padding: 0;
+}
+
+.project-card {
+  background: var(--ion-color-step-100, #171717);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.project-header {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  text-align: left;
+  width: 100%;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.project-header:focus {
+  outline: none;
+}
+
+.project-header:focus-visible {
+  box-shadow: inset 0 0 0 2px rgba(var(--ion-color-primary-rgb), 0.35);
+}
+
 .week-nav {
   align-items: center;
   display: flex;
@@ -42,34 +77,44 @@
   align-items: center;
   display: flex;
   gap: 10px;
+  min-width: 0;
 }
 
-.project-goal-row {
-  align-items: center;
-  display: flex;
-  gap: 12px;
-  justify-content: space-between;
-  width: 100%;
-  margin-bottom: 8px;
+.project-heading-text {
+  min-width: 0;
 }
 
-.grow {
-  flex: 1;
+.project-chevron {
+  color: var(--ion-color-medium);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.project-body {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 12px 12px;
 }
 
 .goal-control {
   align-items: center;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 110px;
   gap: 8px;
+  margin-top: 10px;
 }
 
 .goal-control ion-label {
   color: var(--ion-color-medium);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
 }
 
 .goal-control ion-input {
-  max-width: 80px;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --background: var(--ion-color-step-150, #242424);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  max-width: 110px;
 }
 
 .dot {
@@ -80,8 +125,9 @@
 }
 
 .project-name {
-  font-size: 0.95rem;
-  font-weight: 500;
+  font-size: 1rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .project-meta {
@@ -90,7 +136,7 @@
 }
 
 .project-time {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
 }
 
@@ -101,9 +147,8 @@
 }
 
 .entry-list {
-  border-top: 1px solid var(--ion-color-step-150, #e5e5e5);
-  margin-top: 10px;
-  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 12px 12px;
 }
 
 .entry-list-title {
@@ -121,15 +166,19 @@
 }
 
 .entry-row {
-  align-items: flex-start;
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 6px 0;
+  background: var(--ion-color-step-150, #242424);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  margin-top: 8px;
+  padding: 10px;
 }
 
-.entry-main {
-  min-width: 0;
+.entry-top {
+  align-items: baseline;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  margin-bottom: 4px;
 }
 
 .entry-date {
@@ -140,9 +189,8 @@
 .entry-desc {
   color: var(--ion-color-step-700, #444);
   font-size: 0.9rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  margin-bottom: 3px;
 }
 
 .entry-range {
@@ -156,17 +204,10 @@
   white-space: nowrap;
 }
 
-.entry-side {
-  align-items: flex-end;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
 .entry-actions {
-  align-items: center;
   display: flex;
   gap: 2px;
+  margin-top: 6px;
 }
 
 .entry-actions ion-button {
@@ -175,4 +216,54 @@
   font-size: 0.72rem;
   height: 24px;
   min-height: 24px;
+}
+
+@media (max-width: 430px) {
+  .project-header {
+    padding: 10px;
+  }
+
+  .project-body {
+    padding: 10px;
+  }
+
+  .goal-control {
+    grid-template-columns: 1fr 96px;
+  }
+
+  .goal-control ion-input {
+    max-width: 96px;
+  }
+
+  .entry-list {
+    padding: 10px;
+  }
+
+  .entry-row {
+    padding: 9px;
+  }
+
+  .entry-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 768px) {
+  .entry-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 16px;
+  }
+
+  .entry-top {
+    margin-bottom: 0;
+  }
+
+  .entry-actions {
+    justify-content: flex-end;
+    margin-top: 0;
+    grid-column: 2;
+    grid-row: 2 / span 2;
+    align-self: end;
+  }
 }
