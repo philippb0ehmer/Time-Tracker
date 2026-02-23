@@ -47,7 +47,6 @@ export class CloudSyncService {
   private readonly cloudUserStorageKey = 'tt_cloud_user_id';
   private started = false;
   private authSubscription: Subscription | null = null;
-  private syncTimerId: ReturnType<typeof setInterval> | null = null;
   private syncInProgress = false;
 
   private stateSubject = new BehaviorSubject<CloudSyncState>({
@@ -73,7 +72,6 @@ export class CloudSyncService {
 
     this.supabaseService.start();
     this.authSubscription = this.supabaseService.user$.subscribe((user) => {
-      this.stopPeriodicSync();
       if (!user) {
         this.stateSubject.next({
           ...this.stateSubject.value,
@@ -81,11 +79,6 @@ export class CloudSyncService {
         });
         return;
       }
-
-      void this.syncNow();
-      this.syncTimerId = setInterval(() => {
-        void this.syncNow();
-      }, this.supabaseService.syncIntervalMs);
     });
   }
 
@@ -230,13 +223,6 @@ export class CloudSyncService {
       });
     } finally {
       this.syncInProgress = false;
-    }
-  }
-
-  private stopPeriodicSync(): void {
-    if (this.syncTimerId) {
-      clearInterval(this.syncTimerId);
-      this.syncTimerId = null;
     }
   }
 

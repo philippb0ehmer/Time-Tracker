@@ -181,7 +181,7 @@ This app now includes optional cloud sync (magic-link sign-in + periodic sync).
    - Either:
      - tap `Sign Up` once, then `Sign In` with email/password, or
      - tap `Magic Link` and open the email link
-   - Tap `Sync Now` (auto-sync runs periodically after sign-in)
+   - Tap `Sync (Merge)` (manual sync only)
    - Optional manual direction controls:
      - `Sync (Merge)` = bidirectional last-write-wins by `updatedAt`
      - `Push Up` = overwrite cloud with this device
